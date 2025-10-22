@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
-  "homepage": "https://shanon082.github.io/sicklecell_image_generator_django_react_webApp.git",
+  "homepage": "https://shanon082.github.io/sicklecell_image_generator_django_react_webApp.git/",
   "scripts": {
     "dev": "vite",
     "predeploy": "npm run dev",
