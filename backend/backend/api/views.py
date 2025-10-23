@@ -8,6 +8,7 @@ import rest_framework
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
+from urllib.parse import urljoin
 
 from .utils import classify_images, generate_images_with_gan
 from .models import Process
@@ -92,7 +93,7 @@ class ProcessDataView(APIView):
             # Zip generated images
             generated_zip_path = os.path.join(settings.MEDIA_ROOT, 'generated_zips', f'{gan_type}_generated_{pk}.zip')
             os.makedirs(os.path.dirname(generated_zip_path), exist_ok=True)
-            shutil.make_archive(generated_zip_path.replace('.zip', ''), 'zip', output_dir)
+            shutil.make_archive(generated_zip_path.replace('.zip', ''), 'zip', root_dir=output_dir)
 
             if os.path.exists(generated_zip_path):
                 zip_file_size = os.path.getsize(generated_zip_path)
@@ -122,22 +123,28 @@ class ProcessDataView(APIView):
             shutil.rmtree(temp_dir, ignore_errors=True)
             # if os.path.exists(zip_path):
             #     os.remove(zip_path)
-
-               
+           
 class ProcessRetrieveView(APIView):
     def get(self, request, pk):
         try:
             process = Process.objects.get(pk=pk)
         except Process.DoesNotExist:
-            return Response({'error': 'Process not found'}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'error': 'Process not found'}, status=404)
+
+        processed_file_url = None
+        if process.processed_file:
+            # Build absolute URL to the file
+            processed_file_url = request.build_absolute_uri(
+                settings.MEDIA_URL + process.processed_file.name
+            )
 
         response = {
             'id': process.id,
-            'processed_file': process.processed_file.url if process.processed_file else None,
+            'processed_file': processed_file_url,
             'classification_summary': process.classification_summary,
             'gan_used': process.gan_used,
         }
-        return Response(response, status=status.HTTP_200_OK)
+        return Response(response, status=200)
     
 class ModelInspectView(APIView):
     renderer_classes = [rest_framework.renderers.JSONRenderer]  # Add this line
@@ -187,5 +194,4 @@ class ModelInspectView(APIView):
             'message': 'Model inspection initiated - check server console/terminal for detailed architecture output',
             'results': results
         }, status=status.HTTP_200_OK)
-
 

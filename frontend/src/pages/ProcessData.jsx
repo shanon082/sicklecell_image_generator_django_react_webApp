@@ -11,6 +11,7 @@ const ProcessData = () => {
   const [processing, setProcessing] = useState(false);
   const [result, setResult] = useState(null);
   const [error, setError] = useState('');
+  const [fileName, setFileName] = useState('');
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -29,6 +30,18 @@ const ProcessData = () => {
       setFileName(selectedFile.name);
     }
   };
+
+  const handleDownload = () => {
+    if (!result?.processed_file) return;
+
+    const link = document.createElement('a');
+    link.href = result.processed_file;
+    link.setAttribute('download', 'generated_images.zip');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
 
   const handleDragOver = (e) => {
     e.preventDefault();
@@ -244,8 +257,8 @@ const ProcessData = () => {
                           {JSON.stringify(result.classification_summary, null, 2)}
                         </pre>
                         <p className="text-primary-700 mt-2">GAN Used: <span className="font-semibold">{result.gan_used}</span></p>
-                        <a
-                          href={result.processed_file}
+                        <button
+                          onClick={handleDownload}
                           className="inline-flex items-center bg-green-600 hover:bg-green-700 text-white rounded-lg px-4 py-2 font-medium transition-colors duration-200 shadow-md mt-4"
                           download
                         >
@@ -253,7 +266,7 @@ const ProcessData = () => {
                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                           </svg>
                           Download Generated Images
-                        </a>
+                        </button>
                       </div>
                     </div>
                   </div>
